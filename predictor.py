@@ -3,6 +3,12 @@ import pandas as pd
 import torch
 from torch import nn
 import argparse
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+data_path = SCRIPT_DIR / "data" / "DiseaseAndSymptoms.csv"
+weights_path = SCRIPT_DIR / "symptom_model_weights.pth"
+
 
 class SymptomClassifier(nn.Module):
     def __init__(self, input_size, num_classes):
@@ -18,7 +24,7 @@ class SymptomClassifier(nn.Module):
         return self.model(input)
 
 def load_data_and_prepare():
-    disease_data = pd.read_csv("data/DiseaseAndSymptoms.csv")
+    disease_data = pd.read_csv(data_path)
 
     diseases = disease_data.Disease.unique().tolist()
     symptoms_set = set()
@@ -70,7 +76,7 @@ def main():
     diseases, symptoms, disease_indexes, symptom_indexes = load_data_and_prepare()
 
     model = SymptomClassifier(input_size=len(symptoms), num_classes=len(diseases))
-    model.load_state_dict(torch.load("symptom_model_weights.pth", map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(weights_path, map_location=torch.device('cpu')))
     model.eval()
 
     predicted_disease = predict_disease(symptom_input, model, symptom_indexes, diseases)
